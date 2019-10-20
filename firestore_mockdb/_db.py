@@ -16,7 +16,6 @@ class Col(Getter):
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         for i in self.docs:
             if i.name == name:
-                print(i.name, i.data)
                 return i
         if make is False:
             return None

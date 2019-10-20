@@ -20,6 +20,8 @@ def error_path_not_is_collection(path: List[str]):
 
 
 def create_mock_client() -> Client:
+    global __database__
+    
     __database__.clear()
     return MockClient()
 
