@@ -4,14 +4,19 @@ from abc import ABC, abstractmethod
 
 
 class Getter(ABC):
-    name: str = "_"
+    def __init__(self):
+        self.name: str = "_"
+        
     @abstractmethod
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         pass
     
 
 class Col(Getter):
-    docs: List[Doc] = []
+    
+    def __init__(self):
+        super().__init__()
+        self.docs: List[Doc] = []
 
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         for i in self.docs:
@@ -27,9 +32,12 @@ class Col(Getter):
 
 
 class Doc(Getter):
-    data: Optional[dict] = None
-    cols: List[Col] = []
     
+    def __init__(self):
+        super().__init__()
+        self.data: Optional[dict] = None
+        self.cols: List[Col] = []
+        
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         for i in self.cols:
             if i == name:

@@ -1,4 +1,4 @@
-from typing import List, Iterable, Optional, Tuple, Union
+from typing import List, Iterable, Optional, Any
 from firestore_mockdb.firestore_impl.client import Client, CollectionReference, DocumentReference, DocumentSnapshot, \
     Query
 
@@ -8,7 +8,9 @@ import string
 
 from ._db import Col, Doc, Getter
 
-__database__: List[Col] = []
+
+def create_mock_client() -> Client:
+    return MockClient()
 
 
 def error_path_not_is_document(path: List[str]):
@@ -17,58 +19,61 @@ def error_path_not_is_document(path: List[str]):
 
 def error_path_not_is_collection(path: List[str]):
     return "Error PATH not is Document -> {}".format(".".join(path))
-
-
-def create_mock_client() -> Client:
-    global __database__
     
-    __database__.clear()
-    return MockClient()
 
-
-def _get_or_create_correct_col(name: str) -> Col:
-    global __database__
-    for col in __database__:
-        if col.name == name:
-            return col
+class _DatabaseRaw:
+    def __init__(self):
         
-    c = Col()
-    c.name = name
-    __database__.append(c)
-    return c
-
-
-def _search_path(path: List[str], make: bool = False) -> Getter:
-    _path = path.copy()
-    global_col = _path.pop(0)
-    col: Getter = _get_or_create_correct_col(global_col)
+        self.__database__: List[Col] = []
     
-    for i in _path:
-        col = col.get(i, make)
-        if col is None:
-            break
-   
-    return col
-
-
-def _random_id(n=20):
-    return ''.join(random.choice(string.digits) for x in range(n))
-
+    @property
+    def database(self):
+        return self.__database__
+    
+    def get_or_create_correct_col(self, name: str) -> Col:
+        for col in self.__database__:
+            if col.name == name:
+                return col
+            
+        c = Col()
+        c.name = name
+        self.__database__.append(c)
+        return c
+    
+    def search_path(self, path: List[str], make: bool = False) -> Getter:
+        _path = path.copy()
+        global_col = _path.pop(0)
+        col: Getter = self.get_or_create_correct_col(global_col)
+        
+        for i in _path:
+            col = col.get(i, make)
+            if col is None:
+                break
+       
+        return col
+    
+    @staticmethod
+    def random_id(n=20):
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(n))
+    
 
 class MockClient(Client):
+    
+    def __init__(self):
+        self._database = _DatabaseRaw()
+    
     def collection(self, *collection_path) -> CollectionReference:
         path: List[str] = []
        
         for i in collection_path:
             path += str(i).split("/")
-        return MockCollection(path)
+        return MockCollection(path, self._database)
 
     def document(self, *document_path) -> DocumentReference:
         path: List[str] = []
-        i: str
         for i in document_path:
-            path += i.split("/")
-        return MockDocument(path)
+            path += str(i).split("/")
+        return MockDocument(path, self._database)
 
     @staticmethod
     def field_path(*field_names):
@@ -79,8 +84,8 @@ class MockClient(Client):
 
     def collections(self) -> List[CollectionReference]:
         cols: List[CollectionReference] = []
-        for k in __database__:
-            cols.append(MockCollection([k.name]))
+        for k in self._database.database:
+            cols.append(MockCollection([k.name], self._database))
             
         return cols
 
@@ -89,10 +94,11 @@ class MockClient(Client):
     
 
 class MockCollection(CollectionReference):
-    __path: List[str] = []
     
-    def __init__(self, path: List[str]):
-        self.__path = path
+    def __init__(self, path: List[str], database: _DatabaseRaw):
+        assert database is not None, "database Raw is None"
+        self._database = database
+        self.__path: List[str] = path
         
     @property
     def id(self) -> str:
@@ -101,7 +107,7 @@ class MockCollection(CollectionReference):
     @property
     def parent(self) -> Optional[DocumentReference]:
         if len(self.__path) > 2:
-            return MockDocument(self.__path[:-1])
+            return MockDocument(self.__path[:-1], self._database)
         else:
             return None
 
@@ -109,21 +115,22 @@ class MockCollection(CollectionReference):
         if document_id is None:
             raise Exception("document id is None")
         else:
-            return MockDocument(self.__path+[document_id])
+            return MockDocument(self.__path+[document_id], self._database)
 
     def add(self, document_data, document_id=None) -> DocumentReference:
         doc_id = document_id
         if doc_id is None:
-            doc_id = _random_id()
+            doc_id = self._database.random_id()
             
-        m = MockDocument(self.__path + [doc_id])
+        m = MockDocument(self.__path + [doc_id], self._database)
         m.set(document_data)
         return m
 
     def list_documents(self, page_size=None) -> List[DocumentReference]:
-        e = _search_path(self.__path)
+        e = self._database.search_path(self.__path)
         if isinstance(e, Col):
-            result = [MockDocument(self.__path + [i.name]) for i in e.docs]
+            result: List[DocumentReference] = [MockDocument(self.__path + [i.name], self._database) for i in e.docs]
+            print(len(result))
             if page_size is None:
                 return result
             else:
@@ -173,10 +180,10 @@ class MockCollection(CollectionReference):
     
     
 class MockDocument(DocumentReference):
-    __path: List[str] = []
     
-    def __init__(self, path: List[str]):
-        self.__path = path
+    def __init__(self, path: List[str], database: _DatabaseRaw):
+        self._database = database
+        self.__path: List[str] = path
     
     @property
     def path(self) -> str:
@@ -188,17 +195,17 @@ class MockDocument(DocumentReference):
 
     @property
     def parent(self) -> CollectionReference:
-        return MockCollection(self.__path[:-2])
+        return MockCollection(self.__path[:-2], self._database)
 
     def collection(self, collection_id) -> CollectionReference:
-        return MockCollection(self.__path+[collection_id])
+        return MockCollection(self.__path+[collection_id], self._database)
 
     def create(self, document_data):
         self.set(document_data, merge=False)
 
     def set(self, document_data, merge=False):
         
-        e = _search_path(self.__path, make=True)
+        e = self._database.search_path(self.__path, make=True)
         
         if isinstance(e, Doc):
             
@@ -222,14 +229,14 @@ class MockDocument(DocumentReference):
         pass
 
     def get(self, field_paths=None, transaction=None) -> DocumentSnapshot:
-        return MockSnapshot(self.__path)
+        return MockSnapshot(self.__path, self._database)
 
     def collections(self, page_size=None) -> List[CollectionReference]:
-        e = _search_path(self.__path, make=False)
+        e = self._database.search_path(self.__path, make=False)
         if e is None:
             return []
         if isinstance(e, Doc):
-            return [MockCollection(self.__path + [i.name]) for i in e.cols]
+            return [MockCollection(self.__path + [i.name], self._database) for i in e.cols]
         else:
             raise Exception(error_path_not_is_document(self.__path))
         
@@ -239,12 +246,14 @@ class MockDocument(DocumentReference):
 
 class MockSnapshot(DocumentSnapshot):
     
-    def __init__(self, path: List[str]):
+    def __init__(self, path: List[str], database: _DatabaseRaw):
+        assert database is not None, "database raw is None"
+        self._database: _DatabaseRaw = database
         self.__path: List[str] = path
         
     @property
     def exists(self) -> bool:
-        e = _search_path(self.__path, make=False)
+        e = self._database.search_path(self.__path, make=False)
         if e is None:
             return False
         return True
@@ -255,10 +264,10 @@ class MockSnapshot(DocumentSnapshot):
 
     @property
     def reference(self) -> DocumentReference:
-        return MockDocument(self.__path)
+        return MockDocument(self.__path, self._database)
 
     def get(self, field_path):
-        e = _search_path(self.__path, make=False)
+        e = self._database.search_path(self.__path, make=False)
         if e is None:
             return None
         
@@ -276,7 +285,7 @@ class MockSnapshot(DocumentSnapshot):
 
     def to_dict(self) -> Optional[dict]:
         
-        e = _search_path(self.__path, make=False)
+        e = self._database.search_path(self.__path, make=False)
         
         if e is None:
             return None
