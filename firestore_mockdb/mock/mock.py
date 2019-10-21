@@ -39,8 +39,7 @@ class MockDocument(DocumentReference):
             else:
                 
                 if e.data is not None:
-                    # Todo: IMplement Merge function
-                    e.data.update(document_data)
+                    e.data = {**e.data, **document_data}
                 else:
                     e.data = document_data
         
@@ -105,20 +104,6 @@ class MockClient(Client):
         return self
 
 
-def create_mock_client() -> Client:
-    return MockClient()
-
-
-def error_path_not_is_document(path: List[str]):
-    return "Error PATH not is Document -> {}".format(".".join(path))
-
-
-def error_path_not_is_collection(path: List[str]):
-    return "Error PATH not is Document -> {}".format(".".join(path))
-
-
-
-
 class MockSnapshot(DocumentSnapshot):
     
     def __init__(self, path: List[str], database: _DatabaseRaw):
@@ -175,13 +160,64 @@ class MockSnapshot(DocumentSnapshot):
             raise Exception(error_path_not_is_document(self.__path))
 
 
-class MockCollection(CollectionReference):
+class MockQuery(Query):
+    ASCENDING = "ASCENDING"
+    DESCENDING = "DESCENDING"
+    
+    def __init__(self, col: Col):
+        self.__col = col
+    
+    def select(self, field_paths) -> Query:
+        pass
+
+    def where(self, field_path, op_string, value) -> Query:
+        pass
+
+    def order_by(self, field_path, direction=ASCENDING) -> Query:
+        pass
+
+    def limit(self, count) -> Query:
+        pass
+
+    def offset(self, num_to_skip) -> Query:
+        pass
+
+    def start_at(self, document_fields) -> Query:
+        pass
+
+    def start_after(self, document_fields) -> Query:
+        pass
+
+    def end_before(self, document_fields) -> Query:
+        pass
+
+    def end_at(self, document_fields) -> Query:
+        pass
+
+    def get(self, transaction=None):
+        pass
+
+    def stream(self, transaction=None) -> Iterable[DocumentSnapshot]:
+        for i in self.__col.docs:
+            yield MockDocument
+
+    def on_snapshot(self, callback):
+        pass
+
+
+class MockCollection(MockQuery, CollectionReference):
     
     def __init__(self, path: List[str], database: _DatabaseRaw):
         assert database is not None, "database Raw is None"
         self._database = database
+        e = self._database.search_path(path)
+        if isinstance(e, Col):
+            super().__init__(e)
+        else:
+            raise error_path_not_is_collection(path)
         self.__path: List[str] = path
-    
+        
+        
     @property
     def id(self) -> str:
         return self.__path[-1]
@@ -223,39 +259,3 @@ class MockCollection(CollectionReference):
         
         else:
             raise Exception(error_path_not_is_collection(self.__path))
-    
-    def select(self, field_paths) -> Query:
-        pass
-    
-    def where(self, field_path, op_string, value) -> Query:
-        pass
-    
-    def order_by(self, field_path, **kwargs) -> Query:
-        pass
-    
-    def limit(self, count) -> Query:
-        pass
-    
-    def offset(self, num_to_skip) -> Query:
-        pass
-    
-    def start_at(self, document_fields) -> Query:
-        pass
-    
-    def start_after(self, document_fields) -> Query:
-        pass
-    
-    def end_before(self, document_fields) -> Query:
-        pass
-    
-    def end_at(self, document_fields) -> Query:
-        pass
-    
-    def get(self, transaction=None):
-        pass
-    
-    def stream(self, transaction=None) -> Iterable[DocumentSnapshot]:
-        pass
-    
-    def on_snapshot(self, callback):
-        pass
