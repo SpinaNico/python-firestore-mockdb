@@ -197,8 +197,13 @@ class MockQuery(Query):
         return MockQuery(col, self.__path, self._database)
         
     def order_by(self, field_path, direction=ASCENDING) -> Query:
-        pass
-
+        col = Col()
+        docs = self.__col.docs.copy()
+        
+        col.docs = sorted(docs, key=lambda x: x[field_path], reverse=direction == MockQuery.DESCENDING)
+        
+        return MockQuery(col, self.__path, self._database)
+        
     def limit(self, count) -> Query:
         col = Col()
         col.docs = self.__col.docs.copy()
