@@ -29,6 +29,9 @@ class TestWhere(unittest.TestCase):
             "pearson": 9,
             "name": "Mary"
         })
+        self.client.collection("good").add({
+            "contact": ["1", "2", 3]
+        })
         
     def tearDown(self) -> None:
         del self.client
@@ -47,3 +50,12 @@ class TestWhere(unittest.TestCase):
             result.append(i.to_dict())
 
         self.assertEqual(len(result), 2, "")
+        
+    def test_op_string_in_array(self):
+        result = []
+        for i in self.client.collection("good").where("contact", "array_contains", "2").stream():
+            result.append(i.to_dict())
+        
+        self.assertEqual(len(result), 1)
+        self.assertListEqual(result[0].get("contact"), ["1", "2", 3])
+        

@@ -177,20 +177,23 @@ class MockQuery(Query):
         col = Col()
         docs = self.__col.docs.copy()
         for doc in docs:
-            if op_string == "<=" and doc[field_path] <= value:
-                col.docs.append(doc)
-            if op_string == "==" and doc[field_path] == value:
-                col.docs.append(doc)
-            if op_string == ">=" and doc[field_path] >= value:
-                col.docs.append(doc)
-            if op_string == ">" and doc[field_path] > value:
-                col.docs.append(doc)
-            if op_string == "<" and doc[field_path] < value:
-                col.docs.append(doc)
-            if op_string == "!=" and doc[field_path] != value:
-                col.docs.append(doc)
-            if op_string == "array_contains" and value in doc[field_path]:
-                col.docs.append(doc)
+            if type(doc[field_path]) == type(value):
+                if op_string == "<=" and doc[field_path] <= value:
+                    col.docs.append(doc)
+                if op_string == "==" and doc[field_path] == value:
+                    col.docs.append(doc)
+                if op_string == ">=" and doc[field_path] >= value:
+                    col.docs.append(doc)
+                if op_string == ">" and doc[field_path] > value:
+                    col.docs.append(doc)
+                if op_string == "<" and doc[field_path] < value:
+                    col.docs.append(doc)
+                if op_string == "!=" and doc[field_path] != value:
+                    col.docs.append(doc)
+                    
+            if isinstance(doc[field_path], list):
+                if op_string == "array_contains" and value in doc[field_path]:
+                    col.docs.append(doc)
         return MockQuery(col, self.__path, self._database)
         
     def order_by(self, field_path, direction=ASCENDING) -> Query:

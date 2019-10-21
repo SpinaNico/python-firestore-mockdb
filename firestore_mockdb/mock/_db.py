@@ -43,7 +43,7 @@ class Doc(Getter):
     def __getitem__(self, key):
         if self.data is not None:
             # TODO: **implement** field_path firestore language
-            return self.data[key]
+            return self.data.get(key)
     
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         for i in self.cols:
