@@ -1,4 +1,4 @@
-from firestore_mockdb.mock_db import create_mock_client
+from firestore_mockdb.client import create_mock_client
 import unittest
 
 

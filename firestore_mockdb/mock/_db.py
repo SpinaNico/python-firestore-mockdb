@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import List, Optional
 from abc import ABC, abstractmethod
+import random
+import string
 
 
 class Getter(ABC):
@@ -49,3 +51,39 @@ class Doc(Getter):
             c.name = name
             self.cols.append(c)
             return c
+
+
+class _DatabaseRaw:
+    def __init__(self):
+        
+        self.__database__: List[Col] = []
+    
+    @property
+    def database(self):
+        return self.__database__
+    
+    def get_or_create_correct_col(self, name: str) -> Col:
+        for col in self.__database__:
+            if col.name == name:
+                return col
+        
+        c = Col()
+        c.name = name
+        self.__database__.append(c)
+        return c
+    
+    def search_path(self, path: List[str], make: bool = False) -> Getter:
+        _path = path.copy()
+        global_col = _path.pop(0)
+        col: Getter = self.get_or_create_correct_col(global_col)
+        
+        for i in _path:
+            col = col.get(i, make)
+            if col is None:
+                break
+        
+        return col
+    
+    @staticmethod
+    def random_id(n=20):
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(n))
