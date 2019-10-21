@@ -164,23 +164,54 @@ class MockQuery(Query):
     ASCENDING = "ASCENDING"
     DESCENDING = "DESCENDING"
     
-    def __init__(self, col: Col):
-        self.__col = col
+    def __init__(self, col: Col, path: List[str], database: _DatabaseRaw):
+        self.__col = Col()
+        self.__col.docs = col.docs.copy()
+        self.__path = path
+        self._database = database
     
     def select(self, field_paths) -> Query:
         pass
 
     def where(self, field_path, op_string, value) -> Query:
-        pass
-
+        col = Col()
+        docs = self.__col.docs.copy()
+        for doc in docs:
+            if op_string == "<=" and doc[field_path] <= value:
+                col.docs.append(doc)
+            if op_string == "==" and doc[field_path] == value:
+                col.docs.append(doc)
+            if op_string == ">=" and doc[field_path] >= value:
+                col.docs.append(doc)
+            if op_string == ">" and doc[field_path] > value:
+                col.docs.append(doc)
+            if op_string == "<" and doc[field_path] < value:
+                col.docs.append(doc)
+            if op_string == "!=" and doc[field_path] != value:
+                col.docs.append(doc)
+            if op_string == "array_contains" and value in doc[field_path]:
+                col.docs.append(doc)
+        return MockQuery(col, self.__path, self._database)
+        
     def order_by(self, field_path, direction=ASCENDING) -> Query:
         pass
 
     def limit(self, count) -> Query:
-        pass
+        col = Col()
+        col.docs = self.__col.docs.copy()
+        if len(col.docs) >= count:
+            col.docs = col.docs[:count]
+            
+        return MockQuery(col, self.__path, self._database)
 
     def offset(self, num_to_skip) -> Query:
-        pass
+        if num_to_skip >= len(self.__col.docs):
+            return MockQuery(Col(), self.__path, self._database)
+        else:
+            col = Col()
+            col.docs = self.__col.docs.copy()
+            col.docs = col.docs[num_to_skip:]
+            return MockQuery(col, self.__path, self._database)
 
     def start_at(self, document_fields) -> Query:
         pass
@@ -195,11 +226,12 @@ class MockQuery(Query):
         pass
 
     def get(self, transaction=None):
-        pass
+        """DEPRECATED"""
+        return self.stream()
 
     def stream(self, transaction=None) -> Iterable[DocumentSnapshot]:
         for i in self.__col.docs:
-            yield MockDocument
+            yield MockSnapshot(self.__path + [i.name], self._database)
 
     def on_snapshot(self, callback):
         pass
@@ -212,11 +244,10 @@ class MockCollection(MockQuery, CollectionReference):
         self._database = database
         e = self._database.search_path(path)
         if isinstance(e, Col):
-            super().__init__(e)
+            super().__init__(e, path, database)
         else:
             raise error_path_not_is_collection(path)
         self.__path: List[str] = path
-        
         
     @property
     def id(self) -> str:
