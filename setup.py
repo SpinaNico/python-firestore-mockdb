@@ -7,6 +7,6 @@ setup(
     author='Spina Nico',
     author_email='spinanico93@gmail.com',
     url='https://github.com/SpinaNico/python-mockstore',
-    packages=["mockstore", "mockstore.mock"],
+    packages=["mockstore", "mockstore.mock", "mockstore.mock.firestore_impl"],
     install_requires=[]
 )
