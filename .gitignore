@@ -1,3 +1,5 @@
 .idea
 _
 _docs
+**/__pycache__
+.mypy_cache
