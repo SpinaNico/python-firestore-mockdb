@@ -1,5 +1,5 @@
+from mockstore.client import create_mock_client
 import unittest
-from firestore_mockdb.client import create_mock_client
 
 
 class TestCursor(unittest.TestCase):

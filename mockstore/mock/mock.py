@@ -47,10 +47,19 @@ class MockDocument(DocumentReference):
             raise Exception(error_path_not_is_document(self.__path))
     
     def update(self, field_updates, option=None):
-        pass
+        
+        if self.get().exists is True:
+            self.set(field_updates, merge=True)
+        else:
+            raise Exception("Document not found")
     
     def delete(self, option=None):
-        pass
+        ref = self._database.search_path(self.__path[:-1])
+        doc = self._database.search_path(self.__path)
+        if isinstance(ref, Col) and isinstance(doc, Doc):
+            for index, d in enumerate(ref.docs):
+                if d.name == doc.name:
+                    ref.docs.pop(index)
     
     def get(self, field_paths=None, transaction=None) -> DocumentSnapshot:
         return MockSnapshot(self.__path, self._database)

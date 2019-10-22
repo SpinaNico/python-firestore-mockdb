@@ -1,5 +1,5 @@
+from mockstore.mock._db import Doc
 import unittest
-from firestore_mockdb.mock._db import Doc
 
 
 class TestDoc(unittest.TestCase):
