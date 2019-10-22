@@ -620,7 +620,7 @@ class CollectionReference(ABC):
         """
     
     @abstractmethod
-    def order_by(self, field_path, **kwargs) -> Query:
+    def order_by(self, field_path, direction="ASCENDING") -> Query:
         """Create an "order by" query with this collection as parent.
 
         See
@@ -917,8 +917,6 @@ class DocumentSnapshot(ABC):
         
         
 class Query(ABC):
-    ASCENDING = "ASCENDING"
-    DESCENDING = "DESCENDING"
     
     @abstractmethod
     def select(self, field_paths) -> Query:
@@ -977,7 +975,7 @@ class Query(ABC):
         """
     
     @abstractmethod
-    def order_by(self, field_path, direction=ASCENDING) -> Query:
+    def order_by(self, field_path, direction="ASCENDING") -> Query:
         """Modify the query to add an order clause on a specific field.
 
         See :meth:`~.firestore_v1.client.Client.field_path` for

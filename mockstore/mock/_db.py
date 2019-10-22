@@ -3,6 +3,7 @@ from typing import List, Optional
 from abc import ABC, abstractmethod
 import random
 import string
+from collections import OrderedDict
 
 
 class Getter(ABC):
@@ -37,7 +38,7 @@ class Doc(Getter):
     
     def __init__(self):
         super().__init__()
-        self.data: Optional[dict] = None
+        self.data: Optional[OrderedDict] = None
         self.cols: List[Col] = []
     
     def __getitem__(self, key):

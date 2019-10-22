@@ -2,6 +2,7 @@ from .firestore_impl.client import Client, Query, DocumentReference, DocumentSna
 from ._fx import error_path_not_is_document, error_path_not_is_collection
 from ._db import Col, Doc, _DatabaseRaw
 from typing import List, Optional, Iterable
+from collections import OrderedDict
 
 
 class MockDocument(DocumentReference):
@@ -26,6 +27,8 @@ class MockDocument(DocumentReference):
         return MockCollection(self.__path + [collection_id], self._database)
     
     def create(self, document_data):
+        if self.get().exists is True:
+            raise Exception("Document already exists")
         self.set(document_data, merge=False)
     
     def set(self, document_data, merge=False):
@@ -39,7 +42,7 @@ class MockDocument(DocumentReference):
             else:
                 
                 if e.data is not None:
-                    e.data = {**e.data, **document_data}
+                    e.data = OrderedDict({**e.data, **document_data})
                 else:
                     e.data = document_data
         
@@ -48,7 +51,7 @@ class MockDocument(DocumentReference):
     
     def update(self, field_updates, option=None):
         
-        if self.get().exists is True:
+        if self.get().exists is False:
             self.set(field_updates, merge=True)
         else:
             raise Exception("Document not found")
@@ -180,7 +183,15 @@ class MockQuery(Query):
         self._database = database
     
     def select(self, field_paths) -> Query:
-        pass
+        col = Col()
+        col.docs = self.__col.docs.copy()
+        for doc in col.docs:
+            d: OrderedDict = OrderedDict()
+            for key in field_paths:
+                d.update({key: doc[key]})
+            doc.data = d
+        
+        return MockQuery(col, self.__path, self._database)
 
     def where(self, field_path, op_string, value) -> Query:
         col = Col()
