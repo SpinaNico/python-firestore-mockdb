@@ -25,25 +25,14 @@ class TestOrderBy(unittest.TestCase):
         del self.client
         
     def test_order_ascending_and_limit(self):
-        result = []
-        
-        for i in self.client.collection("good").order_by("id").limit(3).stream():
-            result.append(i.to_dict())
-        
+        result = [i.to_dict() for i in self.client.collection("good").order_by("id").limit(3).stream()]
         self.assertListEqual(result, self.result[:3])
 
     def test_order_ascending(self):
-        result = []
-    
-        for i in self.client.collection("good").order_by("id").stream():
-            result.append(i.to_dict())
-    
+        result = [i.to_dict() for i in self.client.collection("good").order_by("id").stream()]
         self.assertListEqual(result, self.result)
 
     def test_order_descending(self):
-        result = []
-    
-        for i in self.client.collection("good").order_by("id", direction="DESCENDING").stream():
-            result.append(i.to_dict())
+        result = [i.to_dict() for i in self.client.collection("good").order_by("id", direction="DESCENDING").stream()]
         self.result.reverse()
         self.assertListEqual(result, self.result)

@@ -221,17 +221,41 @@ class MockQuery(Query):
             col.docs = col.docs[num_to_skip:]
             return MockQuery(col, self.__path, self._database)
 
+    def __search_position(self, document_fields) -> int:
+        docs = self.__col.docs.copy()
+        init = 0
+        for i in docs:
+            if i.name != document_fields:
+                init += 1
+            else:
+                break
+        return init
+
     def start_at(self, document_fields) -> Query:
-        pass
+        col = Col()
+        init = self.__search_position(document_fields)
+        col.docs = self.__col.docs.copy()[init:]
+        return MockQuery(col, self.__path, self._database)
 
     def start_after(self, document_fields) -> Query:
-        pass
+        col = Col()
+        init = self.__search_position(document_fields)
+        col.docs = self.__col.docs.copy()[init+1:]
+        return MockQuery(col, self.__path, self._database)
 
     def end_before(self, document_fields) -> Query:
-        pass
+        col = Col()
+        init = self.__search_position(document_fields)
+        col.docs = self.__col.docs.copy()[:init]
+        return MockQuery(col, self.__path, self._database)
 
     def end_at(self, document_fields) -> Query:
-        pass
+        col = Col()
+        init = self.__search_position(document_fields)
+        if len(self.__col.docs) > init:
+            init += 1
+        col.docs = self.__col.docs.copy()[:init]
+        return MockQuery(col, self.__path, self._database)
 
     def get(self, transaction=None):
         """DEPRECATED"""
