@@ -2,7 +2,7 @@ import unittest
 from firestore_mockdb.client import create_mock_client
 
 
-class TestStartAt(unittest.TestCase):
+class TestCursor(unittest.TestCase):
     
     def setUp(self) -> None:
         self.client = create_mock_client()

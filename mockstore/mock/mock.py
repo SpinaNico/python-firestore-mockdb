@@ -311,7 +311,7 @@ class MockCollection(MockQuery, CollectionReference):
         e = self._database.search_path(self.__path)
         if isinstance(e, Col):
             result: List[DocumentReference] = [MockDocument(self.__path + [i.name], self._database) for i in e.docs]
-            print(len(result))
+            
             if page_size is None:
                 return result
             else:
