@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Optional, Dict, Callable, List
 from .mockstore.mock import MockClient
-from .messaging import Message
 
+from ._app import MockApp
 
 _apps: Dict[str, _MockApp] = {}
 _DEFAULT_APP_NAME = '[DEFAULT]'
@@ -28,16 +28,6 @@ def get_app(name=_DEFAULT_APP_NAME) -> MockApp:
         return _a
     else:
         raise ValueError("mock app named \"{}\" already exists.".format(name))
-    
-    
-class MockApp:
-    
-    def __init__(self, name):
-        self.__name = name
-        
-    @property
-    def name(self):
-        return self.__name
 
 
 class _MockApp(MockApp):
@@ -45,7 +35,7 @@ class _MockApp(MockApp):
     def __init__(self, name):
         super().__init__(name)
         self.__firestore: Optional[MockClient] = None
-        self.__listeners: List[Callable[[Message], None]] = []
+        self.__listeners: List[Callable[[object], None]] = []
     
     def set_firestore(self, client: MockClient):
         # assert self.__firestore is None, """
@@ -62,3 +52,7 @@ class _MockApp(MockApp):
     def notify_listeners(self, message: Message):
         for l in self.__listeners:
             l(message)
+
+
+def delete_app(app: MockApp):
+    _apps.pop(app.name)

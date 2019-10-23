@@ -1,14 +1,17 @@
 import unittest
 from mock_base.fake_device import FakeDevice
 from mock_base.auth import verify_id_token
-from mock_base import initialize_mock_app
+from mock_base import initialize_app, delete_app
 
 
 class TestDevice(unittest.TestCase):
     
     def setUp(self) -> None:
-        initialize_mock_app()
+        self.app = initialize_app()
     
+    def tearDown(self) -> None:
+        delete_app(self.app)
+        
     def test_device(self):
         device = FakeDevice("hello")
         token = device.get_id_token()

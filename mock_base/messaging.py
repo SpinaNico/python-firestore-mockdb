@@ -1,15 +1,7 @@
-from __future__ import annotations
-from . import MockApp, _apps, _DEFAULT_APP_NAME
 
+from . import get_app, _DEFAULT_APP_NAME
+from ._app import MockApp
 
-def send(message: Message, dry_run=False, app: MockApp = None):
-    if app is None:
-        _a = _apps.get(_DEFAULT_APP_NAME)
-        _a.notify_listeners(message)
-    else:
-        _a = _apps[app.name]
-        _a.notify_listeners(message)
-    
 
 class Notification(object):
   
@@ -22,7 +14,7 @@ class Message(object):
  
     def __init__(self,
                  data=None,
-                 notification=None,
+                 notification: Notification = None,
                  android=None,
                  webpush=None,
                  apns=None,
@@ -37,3 +29,16 @@ class Message(object):
         self.token = token
         self.topic = topic
         self.condition = condition
+
+
+def send(message: Message, dry_run=False, app: MockApp = None):
+    if app is None:
+        _a = get_app()
+        if _a is None:
+            raise Exception("default app not initialized ")
+        _a.notify_listeners(message)
+    else:
+        _a = get_app(app.name)
+        if _a is None:
+            raise Exception("{} app not initialized ".format(app.name))
+        _a.notify_listeners(message)
