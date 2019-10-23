@@ -86,7 +86,6 @@ class _DatabaseRaw:
         for i in _path:
             col = col.get(i, make)
             if col is None:
-                print("non")
                 break
         
         return col

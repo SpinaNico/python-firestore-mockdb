@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='mock_base',
-    version='0.0.3',
+    version='0.0.4',
     description='mock for firebase_admin',
     author='Spina Nico',
     author_email='spinanico93@gmail.com',
