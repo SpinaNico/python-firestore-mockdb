@@ -3,3 +3,5 @@ _
 _docs
 **/__pycache__/
 .mypy_cache/
+firebase-admin-python/
+generate_firebase_coverage.py
