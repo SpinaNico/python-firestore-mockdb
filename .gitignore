@@ -5,4 +5,4 @@ _docs
 .mypy_cache/
 _firebase/
 generate_firebase_coverage.py
-generate_readme.md
+generate_readme.py
