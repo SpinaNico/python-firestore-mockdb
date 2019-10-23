@@ -24,6 +24,11 @@ class MockDocument(DocumentReference):
         return MockCollection(self.__path[:-2], self._database)
     
     def collection(self, collection_id) -> CollectionReference:
+        e = self._database.search_path(self.__path, make=True)
+        if isinstance(e, Doc):
+            col = Col()
+            col.name = collection_id
+            e.cols.append(col)
         return MockCollection(self.__path + [collection_id], self._database)
     
     def create(self, document_data):
@@ -32,20 +37,17 @@ class MockDocument(DocumentReference):
         self.set(document_data, merge=False)
     
     def set(self, document_data, merge=False):
-        
         e = self._database.search_path(self.__path, make=True)
-        
+        print(self.__path)
         if isinstance(e, Doc):
             
             if merge is False:
                 e.data = document_data
             else:
-                
                 if e.data is not None:
                     e.data = OrderedDict({**e.data, **document_data})
                 else:
                     e.data = document_data
-        
         else:
             raise Exception(error_path_not_is_document(self.__path))
     
@@ -294,11 +296,11 @@ class MockCollection(MockQuery, CollectionReference):
     def __init__(self, path: List[str], database: _DatabaseRaw):
         assert database is not None, "database Raw is None"
         self._database = database
-        e = self._database.search_path(path)
+        e = self._database.search_path(path, make=False)
         if isinstance(e, Col):
             super().__init__(e, path, database)
         else:
-            raise error_path_not_is_collection(path)
+            raise error_path_not_is_collection(path, message=type(e))
         self.__path: List[str] = path
         
     @property

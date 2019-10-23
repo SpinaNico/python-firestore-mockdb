@@ -48,7 +48,7 @@ class Doc(Getter):
     
     def get(self, name: str, make: bool = False) -> Optional[Getter]:
         for i in self.cols:
-            if i == name:
+            if i.name == name:
                 return i
         if make is False:
             return None
@@ -86,6 +86,7 @@ class _DatabaseRaw:
         for i in _path:
             col = col.get(i, make)
             if col is None:
+                print("non")
                 break
         
         return col
