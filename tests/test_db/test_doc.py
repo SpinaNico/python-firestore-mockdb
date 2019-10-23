@@ -1,4 +1,4 @@
-from mockstore.mock._db import Doc
+from mock_base.mockstore._db import Doc
 import unittest
 
 

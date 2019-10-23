@@ -1,11 +1,11 @@
-from mockstore.client import create_mock_client
+from mock_base.firestore import create_firestore_mock_client
 import unittest
 
 
 class TestOrderBy(unittest.TestCase):
     
     def setUp(self) -> None:
-        self.client = create_mock_client()
+        self.client = create_firestore_mock_client()
         self.result = [
             {"id": 0}, {"id": 1}, {"id": 2},
             {"id": 4}, {"id": 5}, {"id": 7},

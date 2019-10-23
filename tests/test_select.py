@@ -1,11 +1,11 @@
 import unittest
-from mockstore.client import create_mock_client
+from mock_base.firestore import create_firestore_mock_client
 
 
 class TestSelect(unittest.TestCase):
     
     def setUp(self) -> None:
-        self.client = create_mock_client()
+        self.client = create_firestore_mock_client()
         self.client.collection("hello").add({"field1": "1", "field2": "2", "field3": "3", })
         
     def test_select_one_field(self):
