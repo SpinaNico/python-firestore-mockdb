@@ -6,3 +6,4 @@ _docs
 _firebase/
 generate_firebase_coverage.py
 generate_readme.py
+dist/

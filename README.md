@@ -2,10 +2,8 @@
 
 # Mock Base
 
-Mock base is an implementation for mocktest
+Mock base is an implementation with utils for mocktest
 of the google `firebase-admin-python` package.
-
-
 
 ---
 
@@ -14,7 +12,7 @@ of the google `firebase-admin-python` package.
 normal installation:
 
 ```bash
-pip3 install --upgrade git+https://github.com/SpinaNico/python-mock-base.git@master
+pip3 install mock_base
 ```
 
 installation in a folder:
