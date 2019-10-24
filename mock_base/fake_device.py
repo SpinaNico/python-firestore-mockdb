@@ -33,7 +33,7 @@ class FakeDevice:
             "uid": self.uid,
             "app": self.app.name
         }
-        return self.__tokenize(claim)
+        return self.__tokenize(claim).replace("\n", "")
     
     def device_id_token(self) -> str:
         claim = {
