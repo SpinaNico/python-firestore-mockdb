@@ -38,7 +38,6 @@ class MockDocument(DocumentReference):
     
     def set(self, document_data, merge=False):
         e = self._database.search_path(self.__path, make=True)
-        print(self.__path)
         if isinstance(e, Doc):
             
             if merge is False:
