@@ -9,6 +9,8 @@
 Mock base is an implementation with utils for mocktest
 of the google `firebase-admin-python` package.
 
+is useful for creating Mock for Firebase admin fake tests and verifying proper functioning of cloud-functions in python
+
 ---
 
 #### install it
