@@ -7,3 +7,4 @@ _firebase/
 generate_firebase_coverage.py
 generate_readme.py
 dist/
+mock_base.egg-info
