@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-python setup.py
+python3 setup.py sdist
 twine upload dist/*
