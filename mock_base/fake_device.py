@@ -1,5 +1,6 @@
-from . import _DEFAULT_APP_NAME, _apps, MockApp, _MockApp
-from .messaging import Message
+from . import _DEFAULT_APP_NAME, _apps
+from . import Message
+from . import MockApp
 from typing import List
 import json
 import base64
@@ -17,7 +18,7 @@ class FakeDevice:
             assert self.app is not None, "the default application has not been initialized"
         else:
             self.app: MockApp = app
-        if isinstance(self.app, _MockApp):
+        if isinstance(self.app, MockApp):
             self.app.add_listener(self._listener)
         self.uid: str = uid
         self._primary = random.choices(string.ascii_lowercase)

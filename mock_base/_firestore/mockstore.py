@@ -1,4 +1,4 @@
-from .firestore_impl.client import Client, Query, DocumentReference, DocumentSnapshot, CollectionReference
+from mock_base._firestore.__firestore_abstract import Client, Query, DocumentReference, DocumentSnapshot, CollectionReference
 from ._fx import error_path_not_is_document, error_path_not_is_collection
 from ._db import Col, Doc, _DatabaseRaw
 from typing import List, Optional, Iterable

@@ -1,5 +1,5 @@
 import unittest
-from mock_base.firestore import create_firestore_mock_client
+from mock_base.mock_store import create_firestore_mock_client
 
 
 class TestSubCollection(unittest.TestCase):

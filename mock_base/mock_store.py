@@ -1,6 +1,5 @@
-from .mockstore.mock import  MockClient
-from .mockstore.firestore_impl.client import Client
-from . import _apps, MockApp, _DEFAULT_APP_NAME, _MockApp
+from ._firestore.mockstore import Client, MockClient
+from . import _apps, MockApp, _DEFAULT_APP_NAME
 
 
 def create_firestore_mock_client() -> MockClient:
@@ -26,7 +25,6 @@ def client(app: MockApp = None) -> Client:
     else:
         _app = _apps.get(app.name)
     
-    if isinstance(_app, _MockApp):
         if _app.firestore is None:
             _app.set_firestore(create_firestore_mock_client())
             

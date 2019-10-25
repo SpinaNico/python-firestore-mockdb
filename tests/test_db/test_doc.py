@@ -1,4 +1,4 @@
-from mock_base.mockstore._db import Doc
+from mock_base._firestore._db import Doc
 import unittest
 
 

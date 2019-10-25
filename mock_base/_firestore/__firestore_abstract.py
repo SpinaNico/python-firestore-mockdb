@@ -174,27 +174,26 @@ class Client:
 
     @abstractmethod
     def collections(self) -> List[CollectionReference]:
-            """List top-level collections of the client's database.
+        """List top-level collections of the client's database.
 
             Returns:
                 Sequence[~.firestore_v1.collection.CollectionReference]:
                     iterator of subcollections of the current document.
             """
 
-    # @abstractmethod
-    # def batch(self):
-    #         """Get a batch instance from this client.
-    #
-    #         Returns:
-    #             ~.firestore_v1.batch.WriteBatch: A "write" batch to be
-    #             used for accumulating document changes and sending the changes
-    #             all at once.
-    #         """
-    #
-    
+    @abstractmethod
+    def batch(self):
+        """Get a batch instance from this client.
+
+            Returns:
+                ~.firestore_v1.batch.WriteBatch: A "write" batch to be
+                used for accumulating document changes and sending the changes
+                all at once.
+            """
+
     @abstractmethod
     def transaction(self, **kwargs) -> Client:
-            """Get a transaction that uses this client.
+        """Get a transaction that uses this client.
 
             See :class:`~.firestore_v1.transaction.Transaction` for
             more information on transactions and the constructor arguments.
@@ -498,424 +497,8 @@ class DocumentReference(ABC):
     @abstractmethod
     def on_snapshot(self, callback):
         pass
-    
 
-class CollectionReference(ABC):
-    
-    @property
-    @abstractmethod
-    def id(self) -> str:
-        """The collection identifier.
 
-        Returns:
-            str: The last component of the path.
-        """
-        return self._path[-1]
-    
-    @property
-    @abstractmethod
-    def parent(self) -> Optional[DocumentReference]:
-        """Document that owns the current collection.
-
-        Returns:
-            Optional[~.firestore_v1.document.DocumentReference]: The
-            parent document, if the current collection is not a
-            top-level collection.
-        """
-    
-    @abstractmethod
-    def document(self, document_id: Optional[str] = None) -> DocumentReference:
-        """Create a sub-document underneath the current collection.
-
-        Args:
-            document_id (Optional[str]): The document identifier
-                within the current collection. If not provided, will default
-                to a random 20 character string composed of digits,
-                uppercase and lowercase and letters.
-
-        Returns:
-            ~.firestore_v1.document.DocumentReference: The child
-            document.
-        """
-    
-    @abstractmethod
-    def add(self, document_data, document_id=None) -> DocumentReference:
-        """Create a document in the Firestore database with the provided data.
-
-        Args:
-            document_data (dict): Property names and values to use for
-                creating the document.
-            document_id (Optional[str]): The document identifier within the
-                current collection. If not provided, an ID will be
-                automatically assigned by the server (the assigned ID will be
-                a random 20 character string composed of digits,
-                uppercase and lowercase letters).
-
-        Returns:
-            Tuple[google.protobuf.timestamp_pb2.Timestamp, \
-                ~.firestore_v1.document.DocumentReference]: Pair of
-
-            * The ``update_time`` when the document was created (or
-              overwritten).
-            * A document reference for the created document.
-
-        Raises:
-            ~google.cloud.exceptions.Conflict: If ``document_id`` is provided
-                and the document already exists.
-        """
-    
-    @abstractmethod
-    def list_documents(self, page_size=None) -> List[DocumentReference]:
-        """List all subdocuments of the current collection.
-
-        Args:
-            page_size (Optional[int]]): The maximum number of documents
-            in each page of results from this request. Non-positive values
-            are ignored. Defaults to a sensible value set by the API.
-
-        Returns:
-            Sequence[~.firestore_v1.collection.DocumentReference]:
-                iterator of subdocuments of the current collection. If the
-                collection does not exist at the time of `snapshot`, the
-                iterator will be empty
-        """
-    
-    @abstractmethod
-    def select(self, field_paths) -> Query:
-        """Create a "select" query with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.select` for
-        more information on this method.
-
-        Args:
-            field_paths (Iterable[str, ...]): An iterable of field paths
-                (``.``-delimited list of field names) to use as a projection
-                of document fields in the query results.
-
-        Returns:
-            ~.firestore_v1.query.Query: A "projected" query.
-        """
-    
-    @abstractmethod
-    def where(self, field_path, op_string, value) -> Query:
-        """Create a "where" query with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.where` for
-        more information on this method.
-
-        Args:
-            field_path (str): A field path (``.``-delimited list of
-                field names) for the field to filter on.
-            op_string (str): A comparison operation in the form of a string.
-                Acceptable values are ``<``, ``<=``, ``==``, ``>=``
-                and ``>``.
-            value (Any): The value to compare the field against in the filter.
-                If ``value`` is :data:`None` or a NaN, then ``==`` is the only
-                allowed operation.
-
-        Returns:
-            ~.firestore_v1.query.Query: A filtered query.
-        """
-    
-    @abstractmethod
-    def order_by(self, field_path, direction="ASCENDING") -> Query:
-        """Create an "order by" query with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.order_by` for
-        more information on this method.
-
-        Args:
-            field_path (str): A field path (``.``-delimited list of
-                field names) on which to order the query results.
-            kwargs (Dict[str, Any]): The keyword arguments to pass along
-                to the query. The only supported keyword is ``direction``,
-                see :meth:`~.firestore_v1.query.Query.order_by` for
-                more information.
-
-        Returns:
-            ~.firestore_v1.query.Query: An "order by" query.
-        """
-    
-    @abstractmethod
-    def limit(self, count) -> Query:
-        """Create a limited query with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.limit` for
-        more information on this method.
-
-        Args:
-            count (int): Maximum number of documents to return that match
-                the query.
-
-        Returns:
-            ~.firestore_v1.query.Query: A limited query.
-        """
-    
-    @abstractmethod
-    def offset(self, num_to_skip) -> Query:
-        """Skip to an offset in a query with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.offset` for
-        more information on this method.
-
-        Args:
-            num_to_skip (int): The number of results to skip at the beginning
-                of query results. (Must be non-negative.)
-
-        Returns:
-            ~.firestore_v1.query.Query: An offset query.
-        """
-        
-    @abstractmethod
-    def start_at(self, document_fields) -> Query:
-        """Start query at a cursor with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.start_at` for
-        more information on this method.
-
-        Args:
-            document_fields (Union[~.firestore_v1.\
-                document.DocumentSnapshot, dict, list, tuple]): a document
-                snapshot or a dictionary/list/tuple of fields representing a
-                query results cursor. A cursor is a collection of values that
-                represent a position in a query result set.
-
-        Returns:
-            ~.firestore_v1.query.Query: A query with cursor.
-        """
-        
-    @abstractmethod
-    def start_after(self, document_fields) -> Query:
-        """Start query after a cursor with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.start_after` for
-        more information on this method.
-
-        Args:
-            document_fields (Union[~.firestore_v1.\
-                document.DocumentSnapshot, dict, list, tuple]): a document
-                snapshot or a dictionary/list/tuple of fields representing a
-                query results cursor. A cursor is a collection of values that
-                represent a position in a query result set.
-
-        Returns:
-            ~.firestore_v1.query.Query: A query with cursor.
-        """
-    
-    @abstractmethod
-    def end_before(self, document_fields) -> Query:
-        """End query before a cursor with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.end_before` for
-        more information on this method.
-
-        Args:
-            document_fields (Union[~.firestore_v1.\
-                document.DocumentSnapshot, dict, list, tuple]): a document
-                snapshot or a dictionary/list/tuple of fields representing a
-                query results cursor. A cursor is a collection of values that
-                represent a position in a query result set.
-
-        Returns:
-            ~.firestore_v1.query.Query: A query with cursor.
-        """
-       
-    @abstractmethod
-    def end_at(self, document_fields) -> Query:
-        """End query at a cursor with this collection as parent.
-
-        See
-        :meth:`~.firestore_v1.query.Query.end_at` for
-        more information on this method.
-
-        Args:
-            document_fields (Union[~.firestore_v1.\
-                document.DocumentSnapshot, dict, list, tuple]): a document
-                snapshot or a dictionary/list/tuple of fields representing a
-                query results cursor. A cursor is a collection of values that
-                represent a position in a query result set.
-
-        Returns:
-            ~.firestore_v1.query.Query: A query with cursor.
-        """
-      
-    @abstractmethod
-    def get(self, transaction=None):
-        """Deprecated alias for :meth:`stream`."""
-       
-    @abstractmethod
-    def stream(self, transaction=None) -> Iterable[DocumentSnapshot]:
-        """Read the documents in this collection.
-
-        This sends a ``RunQuery`` RPC and then returns an iterator which
-        consumes each document returned in the stream of ``RunQueryResponse``
-        messages.
-
-        .. note::
-
-           The underlying stream of responses will time out after
-           the ``max_rpc_timeout_millis`` value set in the GAPIC
-           client configuration for the ``RunQuery`` API.  Snapshots
-           not consumed from the iterator before that point will be lost.
-
-        If a ``transaction`` is used and it already has write operations
-        added, this method cannot be used (i.e. read-after-write is not
-        allowed).
-
-        Args:
-            transaction (Optional[~.firestore_v1.transaction.\
-                Transaction]): An existing transaction that the query will
-                run in.
-
-        Yields:
-            ~.firestore_v1.document.DocumentSnapshot: The next
-            document that fulfills the query.
-        """
-        
-    @abstractmethod
-    def on_snapshot(self, callback):
-        """Monitor the documents in this collection.
-
-        This starts a watch on this collection using a background thread. The
-        provided callback is run on the snapshot of the documents.
-
-        Args:
-            callback(~.firestore.collection.CollectionSnapshot): a callback
-                to run when a change occurs.
-
-        Example:
-            from google.cloud import firestore_v1
-
-            db = firestore_v1.Client()
-            collection_ref = db.collection(u'users')
-
-            def on_snapshot(collection_snapshot):
-                for doc in collection_snapshot.documents:
-                    print(u'{} => {}'.format(doc.id, doc.to_dict()))
-
-            # Watch this collection
-            collection_watch = collection_ref.on_snapshot(on_snapshot)
-
-            # Terminate this watch
-            collection_watch.unsubscribe()
-        """
-        
-
-class DocumentSnapshot(ABC):
-    @property
-    @abstractmethod
-    def exists(self) -> bool:
-        """Existence flag.
-
-        Indicates if the document existed at the time this snapshot
-        was retrieved.
-
-        Returns:
-            bool: The existence flag.
-        """
-      
-    @property
-    @abstractmethod
-    def id(self) -> str:
-        """The document identifier (within its collection).
-
-        Returns:
-            str: The last component of the path of the document.
-        """
-    
-    @property
-    @abstractmethod
-    def reference(self) -> DocumentReference:
-        """Document reference corresponding to document that owns this data.
-
-        Returns:
-            ~.firestore_v1.document.DocumentReference: A document
-            reference corresponding to this document.
-        """
-    
-    @abstractmethod
-    def get(self, field_path) -> Any:
-        """Get a value from the snapshot data.
-
-        If the data is nested, for example:
-
-        .. code-block:: python
-
-           >>> snapshot.to_dict()
-           {
-               'top1': {
-                   'middle2': {
-                       'bottom3': 20,
-                       'bottom4': 22,
-                   },
-                   'middle5': True,
-               },
-               'top6': b'\x00\x01 foo',
-           }
-
-        a **field path** can be used to access the nested data. For
-        example:
-
-        .. code-block:: python
-
-           >>> snapshot.get('top1')
-           {
-               'middle2': {
-                   'bottom3': 20,
-                   'bottom4': 22,
-               },
-               'middle5': True,
-           }
-           >>> snapshot.get('top1.middle2')
-           {
-               'bottom3': 20,
-               'bottom4': 22,
-           }
-           >>> snapshot.get('top1.middle2.bottom3')
-           20
-
-        See :meth:`~.firestore_v1.client.Client.field_path` for
-        more information on **field paths**.
-
-        A copy is returned since the data may contain mutable values,
-        but the data stored in the snapshot must remain immutable.
-
-        Args:
-            field_path (str): A field path (``.``-delimited list of
-                field names).
-
-        Returns:
-            Any or None:
-                (A copy of) the value stored for the ``field_path`` or
-                None if snapshot document does not exist.
-
-        Raises:
-            KeyError: If the ``field_path`` does not match nested data
-                in the snapshot.
-        """
-    
-    @abstractmethod
-    def to_dict(self) -> Optional[dict]:
-        """Retrieve the data contained in this snapshot.
-
-        A copy is returned since the data may contain mutable values,
-        but the data stored in the snapshot must remain immutable.
-
-        Returns:
-            Dict[str, Any] or None:
-                The data in the snapshot.  Returns None if reference
-                does not exist.
-        """
-        
-        
 class Query(ABC):
     
     @abstractmethod
@@ -1093,7 +676,7 @@ class Query(ABC):
             a copy of the current query, modified with the newly added
             "start after" cursor.
         """
-        
+    
     @abstractmethod
     def end_before(self, document_fields) -> Query:
         """End query results before a particular document value.
@@ -1186,7 +769,7 @@ class Query(ABC):
         """
     
     @abstractmethod
-    def on_snapshot(self, callback) :
+    def on_snapshot(self, callback):
         """Monitor the documents in this collection that match this query.
 
         This starts a watch on this query using a background thread. The
@@ -1212,3 +795,193 @@ class Query(ABC):
             # Terminate this watch
             query_watch.unsubscribe()
         """
+
+
+class CollectionReference(Query, ABC):
+    
+    @property
+    @abstractmethod
+    def id(self) -> str:
+        """The collection identifier.
+
+        Returns:
+            str: The last component of the path.
+        """
+        return self._path[-1]
+    
+    @property
+    @abstractmethod
+    def parent(self) -> Optional[DocumentReference]:
+        """Document that owns the current collection.
+
+        Returns:
+            Optional[~.firestore_v1.document.DocumentReference]: The
+            parent document, if the current collection is not a
+            top-level collection.
+        """
+    
+    @abstractmethod
+    def document(self, document_id: Optional[str] = None) -> DocumentReference:
+        """Create a sub-document underneath the current collection.
+
+        Args:
+            document_id (Optional[str]): The document identifier
+                within the current collection. If not provided, will default
+                to a random 20 character string composed of digits,
+                uppercase and lowercase and letters.
+
+        Returns:
+            ~.firestore_v1.document.DocumentReference: The child
+            document.
+        """
+    
+    @abstractmethod
+    def add(self, document_data, document_id=None) -> DocumentReference:
+        """Create a document in the Firestore database with the provided data.
+
+        Args:
+            document_data (dict): Property names and values to use for
+                creating the document.
+            document_id (Optional[str]): The document identifier within the
+                current collection. If not provided, an ID will be
+                automatically assigned by the server (the assigned ID will be
+                a random 20 character string composed of digits,
+                uppercase and lowercase letters).
+
+        Returns:
+            Tuple[google.protobuf.timestamp_pb2.Timestamp, \
+                ~.firestore_v1.document.DocumentReference]: Pair of
+
+            * The ``update_time`` when the document was created (or
+              overwritten).
+            * A document reference for the created document.
+
+        Raises:
+            ~google.cloud.exceptions.Conflict: If ``document_id`` is provided
+                and the document already exists.
+        """
+    
+    @abstractmethod
+    def list_documents(self, page_size=None) -> List[DocumentReference]:
+        """List all subdocuments of the current collection.
+
+        Args:
+            page_size (Optional[int]]): The maximum number of documents
+            in each page of results from this request. Non-positive values
+            are ignored. Defaults to a sensible value set by the API.
+
+        Returns:
+            Sequence[~.firestore_v1.collection.DocumentReference]:
+                iterator of subdocuments of the current collection. If the
+                collection does not exist at the time of `snapshot`, the
+                iterator will be empty
+        """
+    
+
+class DocumentSnapshot(ABC):
+    @property
+    @abstractmethod
+    def exists(self) -> bool:
+        """Existence flag.
+
+        Indicates if the document existed at the time this snapshot
+        was retrieved.
+
+        Returns:
+            bool: The existence flag.
+        """
+      
+    @property
+    @abstractmethod
+    def id(self) -> str:
+        """The document identifier (within its collection).
+
+        Returns:
+            str: The last component of the path of the document.
+        """
+    
+    @property
+    @abstractmethod
+    def reference(self) -> DocumentReference:
+        """Document reference corresponding to document that owns this data.
+
+        Returns:
+            ~.firestore_v1.document.DocumentReference: A document
+            reference corresponding to this document.
+        """
+    
+    @abstractmethod
+    def get(self, field_path) -> Any:
+        """Get a value from the snapshot data.
+
+        If the data is nested, for example:
+
+        .. code-block:: python
+
+           >>> snapshot.to_dict()
+           {
+               'top1': {
+                   'middle2': {
+                       'bottom3': 20,
+                       'bottom4': 22,
+                   },
+                   'middle5': True,
+               },
+               'top6': b'\x00\x01 foo',
+           }
+
+        a **field path** can be used to access the nested data. For
+        example:
+
+        .. code-block:: python
+
+           >>> snapshot.get('top1')
+           {
+               'middle2': {
+                   'bottom3': 20,
+                   'bottom4': 22,
+               },
+               'middle5': True,
+           }
+           >>> snapshot.get('top1.middle2')
+           {
+               'bottom3': 20,
+               'bottom4': 22,
+           }
+           >>> snapshot.get('top1.middle2.bottom3')
+           20
+
+        See :meth:`~.firestore_v1.client.Client.field_path` for
+        more information on **field paths**.
+
+        A copy is returned since the data may contain mutable values,
+        but the data stored in the snapshot must remain immutable.
+
+        Args:
+            field_path (str): A field path (``.``-delimited list of
+                field names).
+
+        Returns:
+            Any or None:
+                (A copy of) the value stored for the ``field_path`` or
+                None if snapshot document does not exist.
+
+        Raises:
+            KeyError: If the ``field_path`` does not match nested data
+                in the snapshot.
+        """
+    
+    @abstractmethod
+    def to_dict(self) -> Optional[dict]:
+        """Retrieve the data contained in this snapshot.
+
+        A copy is returned since the data may contain mutable values,
+        but the data stored in the snapshot must remain immutable.
+
+        Returns:
+            Dict[str, Any] or None:
+                The data in the snapshot.  Returns None if reference
+                does not exist.
+        """
+
+

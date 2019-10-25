@@ -7,6 +7,10 @@ setup(
     author='Spina Nico',
     author_email='spinanico93@gmail.com',
     url='https://github.com/SpinaNico/python-mock-base',
-    packages=["mock_base", "mock_base.mockstore", "mock_base.mockstore.firestore_impl"],
+    packages=[
+        "mock_base",
+        "mock_base._firestore",
+        "mock_base._messaging"
+    ],
     install_requires=[]
 )

@@ -20,3 +20,13 @@ installation in a folder:
 ```bash
 pip3 install --no-dependencies --upgrade -t lib git+https://github.com/SpinaNico/python-mock-base.git@master
 ```
+
+# Structure
+
+* mock_base
+    * mock_messaging
+    * mock_store
+    * mock_storage
+    * mock_auth
+    * fake_device
+    

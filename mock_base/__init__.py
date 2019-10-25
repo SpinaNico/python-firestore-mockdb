@@ -1,26 +1,61 @@
 from __future__ import annotations
-from typing import Optional, Dict, Callable, List
-from .mockstore.mock import MockClient
+from typing import Dict, Optional, List, Callable
 
-from ._app import MockApp
+from ._firestore import mockstore
+from ._messaging import messaging
 
-_apps: Dict[str, _MockApp] = {}
+
+_apps: Dict[str, MockApp] = {}
 _DEFAULT_APP_NAME = '[DEFAULT]'
 
+__all__ = [
+    "Message",
+    "Notification",
+    "MockClient"
+]
 
-def initialize_app(name=_DEFAULT_APP_NAME) -> MockApp:
+Message = messaging.Message
+Notification = messaging.Notification
+MockClient = mockstore.MockClient
+
+
+class MockApp:
+    
+    def __init__(self, name):
+        self.name = name
+        self.__mock_store: Optional[MockClient] = None
+        self.__listeners: List[Callable[[object], None]] = []
+    
+    def set_firestore(self, client: MockClient):
+        # assert self.__firestore is None, """
+        # the firestore client of this app: "{}" is instantiated several times""".format(self.name)
+        self.__mock_store = client
+    
+    @property
+    def firestore(self) -> MockClient:
+        return self.__mock_store
+    
+    def add_listener(self, fun: Callable[[Message], None]) -> None:
+        self.__listeners.append(fun)
+    
+    def notify_listeners(self, message: Message):
+        for l in self.__listeners:
+            l(message)
+
+
+def initialize_mock_app(name=_DEFAULT_APP_NAME) -> MockApp:
 
     if name in _apps.keys():
         raise ValueError("mock app named \"{}\" already exists.".format(name))
     else:
-        _a = _MockApp(name)
+        _a = MockApp(name)
         _apps.update({
             name: _a
         })
     return _a
 
 
-def get_app(name=_DEFAULT_APP_NAME) -> MockApp:
+def get_mock_app(name=_DEFAULT_APP_NAME) -> MockApp:
     if name in _apps.keys():
         _a = _apps.get(_DEFAULT_APP_NAME)
         if _a is None:
@@ -30,29 +65,5 @@ def get_app(name=_DEFAULT_APP_NAME) -> MockApp:
         raise ValueError("mock app named \"{}\" already exists.".format(name))
 
 
-class _MockApp(MockApp):
-    
-    def __init__(self, name):
-        super().__init__(name)
-        self.__firestore: Optional[MockClient] = None
-        self.__listeners: List[Callable[[object], None]] = []
-    
-    def set_firestore(self, client: MockClient):
-        # assert self.__firestore is None, """
-        # the firestore client of this app: "{}" is instantiated several times""".format(self.name)
-        self.__firestore = client
-        
-    @property
-    def firestore(self) -> MockClient:
-        return self.__firestore
-    
-    def add_listener(self, fun: Callable[[Message], None]) -> None:
-        self.__listeners.append(fun)
-
-    def notify_listeners(self, message: Message):
-        for l in self.__listeners:
-            l(message)
-
-
-def delete_app(app: MockApp):
+def delete_mock_app(app: MockApp):
     _apps.pop(app.name)
